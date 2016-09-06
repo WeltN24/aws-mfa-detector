@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -16,25 +17,12 @@ type Result struct {
 	Data interface{} `json:"data"`
 }
 
-type stringSlice []string
-
-func (i *stringSlice) String() string {
-	return "my string representation"
-}
-
-func (i *stringSlice) Set(value string) error {
-	*i = append(*i, value)
-	return nil
-}
-
 func main() {
 	var (
 		awsRegion     = flag.String("aws.region", "eu-central-1", "AWS region")
-		userToExclude stringSlice
+		userToExclude = flag.String("exclude", "", "Users to exclude from detection (, separated)")
 		err           error
 	)
-
-	flag.Var(&userToExclude, "exclude", "Users to exclude (Usernames)")
 
 	flag.Parse()
 
@@ -46,7 +34,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	users = excludeUsers(users, userToExclude)
+	usersToExclude := strings.Split(*userToExclude, ",")
+	users = excludeUsers(users, usersToExclude)
 
 	usersWithoutMfa := make([]string, 0, len(users))
 	for _, userName := range users {
