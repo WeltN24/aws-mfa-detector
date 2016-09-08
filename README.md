@@ -8,6 +8,6 @@ Fetches all users from an aws account and returns the once which don't have acti
 ### Examples
         aws-mfa-detector -aws.region eu-west-1
 
-exclude users from detection
+exclude user from detection
 
         aws-mfa-detector -aws.region eu-west-1 -exclude user1.name,user2.name
