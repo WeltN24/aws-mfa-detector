@@ -37,7 +37,7 @@ func main() {
 	usersToExclude := strings.Split(*userToExclude, ",")
 	users = excludeUsers(users, usersToExclude)
 
-	usersWithoutMfa := make([]string, 0, len(users))
+	usersWithoutMfa := make([]map[string]string, 0, len(users))
 	for _, userName := range users {
 		has, err := hasMfa(iamCli, userName)
 
@@ -46,7 +46,9 @@ func main() {
 		}
 
 		if !has {
-			usersWithoutMfa = append(usersWithoutMfa, userName)
+			usersWithoutMfa = append(usersWithoutMfa, map[string]string{
+				"{#USERNAME}": userName,
+			})
 		}
 	}
 
