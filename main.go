@@ -41,11 +41,13 @@ func main() {
 	for _, userName := range users {
 		has, err := hasMfa(iamCli, userName)
 
+		everUsedPassword, err := hasUsedPassword(iamCli, userName)
+
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		if !has {
+		if !has && everUsedPassword {
 			usersWithoutMfa = append(usersWithoutMfa, map[string]string{
 				"{#USERNAME}": userName,
 			})
@@ -84,6 +86,23 @@ func hasMfa(iamCli *iam.IAM, userName string) (bool, error) {
 	}
 
 	return len(resp.MFADevices) > 0, nil
+}
+
+func hasUsedPassword(iamCli *iam.IAM, userName string) (bool, error) {
+	respUser, err := iamCli.GetUser(&iam.GetUserInput{
+		UserName: aws.String(userName),
+	})
+
+	if err != nil {
+		return true, fmt.Errorf("getting information about user password usage for user %v %v", userName, err)
+	}
+
+	if respUser.User.PasswordLastUsed != nil {
+		return true, nil
+	}
+
+	return false, nil
+
 }
 
 func excludeUsers(originalList []string, usersToExclude []string) []string {
